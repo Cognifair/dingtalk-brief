@@ -4,6 +4,8 @@
 
 A skill for AI agents that turns DingTalk group chats into a traceable, four-quadrant action brief — with sources, coverage notes and optional push to a DingTalk robot.
 
+> **来源**：本项目的本地读取链路基于 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter)（MIT）开发。桥接脚本 `agent_read.py` 是按它的 HTTP 接口独立编写的精简客户端，没有复制上游代码；技能结构、四象限规则、质量文档与推送脚本为本项目原创。上游许可证全文见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
 ---
 
 ## 为什么
@@ -136,10 +138,11 @@ examples/
   allowed_groups.example.json
 ```
 
-## 致谢
+## 来源与许可
 
-- [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter) — 本地缓存读取的参考实现（MIT）
-- 四象限结构来自艾森豪威尔矩阵
+- **上游**：[idealistichacker/dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter)（MIT，Copyright © 2026 DingTalk Exporter Contributors）。本项目的本地读取链路（V2/V3 缓存解密、本地 HTTP 服务、会话/消息接口）构建在它之上。
+- **本仓库**：桥接客户端、四象限结构、文档与推送脚本为原创，MIT © 2026 Cognifair。
+- 上游许可证全文见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## License
 

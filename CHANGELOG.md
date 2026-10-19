@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1 — 2026-10-19
+
+- 明确来源：本地读取链路基于 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter)（MIT）开发
+- 新增 `THIRD_PARTY_NOTICES.md`，保留上游版权与 MIT 许可证全文
+- README、SKILL.md、部署文档补充归属说明
+
 ## v1.0.0 — 2026-10-19
 
 首个公开版本。

@@ -9,6 +9,8 @@ description: 把指定钉钉群和时段的聊天整理成可追溯的四象限�
 
 默认走「本机已登录客户端的本地缓存」这条只读链路：不需要企业应用、机器人或管理员 OAuth，也不会向群里发任何消息。
 
+> 本地读取链路基于 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter)（MIT）开发，许可证与归属见仓库根目录 `THIRD_PARTY_NOTICES.md`。
+
 ## 它解决什么问题
 
 群消息是流水账：几十条里混着通知、作业、值日、报名、闲聊和过期安排。本技能把它整理成一张能直接照着做事的表：

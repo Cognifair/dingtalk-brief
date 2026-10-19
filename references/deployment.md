@@ -12,7 +12,7 @@
 
 ## 2. 部署导出器
 
-本项目以 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter) 作为参考实现（上游 MIT）。把仓库 clone 到工作目录后：
+本项目基于 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter) 开发（MIT，Copyright © 2026 DingTalk Exporter Contributors）。许可证全文见仓库根目录 `THIRD_PARTY_NOTICES.md`。把仓库 clone 到工作目录后：
 
 ```powershell
 python -m venv .venv
