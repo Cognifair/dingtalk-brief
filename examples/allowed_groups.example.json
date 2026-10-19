@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "groups": [
+    {"cid": "12345678901", "title": "示例群：只填你要读的群"},
+    {"cid": "12345678902", "title": "示例群：第二个群"}
+  ],
+  "automatic_sync": false,
+  "automatic_summary": false,
+  "message_time_range": "must_be_explicit"
+}

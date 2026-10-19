@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 敏感：真实白名单、明文数据库、导出与日志
+allowed_groups.json
+data/
+*.db
+*.db-wal
+*.db-shm
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
