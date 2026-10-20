@@ -62,7 +62,7 @@ Agent（本技能）──► 四象限简报 ──► 聊天 / 钉钉群机器
 
 三条设计原则：
 
-1. **只读**：不发送群消息、不创建待办、不触发全账号导出。
+1. **只读消息**：不向群发消息、不触发全账号导出；推送与建任务是显式授权的输出动作。
 2. **有据**：每条结论能回到 `message_id`；区分事实、候选行动与待确认。
 3. **诚实**：缓存快照时间、未解析媒体、覆盖缺口都写进简报。
 
@@ -79,7 +79,25 @@ cp -r dingtalk-brief ~/.agents/skills/dingtalk-brief
 
 Python 3.9+，脚本只用标准库。
 
-## 推送（可选）
+## 自动刷新缓存（可选）
+
+定时跑的时候，先唤端并刷新，避免读到昨天的缓存：
+
+```powershell
+setx DINGTALK_EXPORTER_DIR "D:\dingtalk-brief\dingtalk-chat-exporter"
+setx DINGTALK_EXE "C:\Program Files (x86)\DingDing\main\current\DingTalk.exe"   # 客户端没开时自动启动
+setx DINGTALK_WAL "C:\Users\<you>\AppData\Roaming\DingTalk\<account>_v3\DBFiles\dingtalk.db-wal"
+```
+
+```bash
+python scripts/prepare-cache.py
+# {"ok": true, "dingtalk": "running", "sync_wait_s": 8.0,
+#  "decrypt_ok": true, "service": "ready", "snapshot": "...", "elapsed_s": 12.7}
+```
+
+它会：确认客户端在跑（可选自动启动）→ 等消息库不再变化 → 停只读服务 → 重新解密 → 重启服务。**这会生成整个账号的明文副本**，只在允许的环境里用。
+
+## 推送与建任务
 
 钉钉自建群机器人，官方 Webhook：
 
@@ -96,15 +114,29 @@ python scripts/push-dingtalk.py --title "钉钉简报 2026-10-19" --text-file br
 - Webhook 只存环境变量，不进仓库、不进日志。
 - 想要 DING 级强提醒，需要企业应用，个人号做不到。
 
+滴答清单任务，走官方 MCP：
+
+```powershell
+setx DIDA_TOKEN "你的滴答 API 口令"   # 网页版：头像 → 设置 → 账户与安全 → API 口令
+```
+
+```bash
+python scripts/dida-task.py add --file tasks.json --dry-run   # 先预览
+python scripts/dida-task.py add --file tasks.json
+```
+
+- 只建未过期的紧急事项；按 14 天窗口对未完成 + 已完成去重，勾掉的不会复活。
+- 默认放收集箱；`--project-id` 可指定清单，`projects` 列出清单。
+
 ## 定时运行
 
-配合 Agent 平台的定时任务，把「读群 → 出简报 → 推送」串起来。提示词示例：
+配合 Agent 平台的定时任务，把「刷新 → 读群 → 出简报 → 推送 → 建任务」串起来：
 
 ```text
-读取白名单群今天的消息，按四象限生成简报，
-把 Markdown 写到临时文件，再运行
-python scripts/push-dingtalk.py --title "钉钉简报 <日期>" --text-file <文件>。
-若紧急且重要非空，再发一条只含 3 条的短消息。
+先跑 python scripts/prepare-cache.py，ok=true 才继续。
+读取白名单群今天的消息，按四象限生成简报。
+把 Markdown 写到临时文件，运行 push-dingtalk.py 推送；
+再把未过期的紧急事项写成 tasks.json，运行 dida-task.py add 建任务。
 ```
 
 ## 安全与隐私
@@ -132,8 +164,10 @@ references/
   brief-quality.md          简报质量规则
   media.md                  图片 / 文件 / OCR
 scripts/
+  prepare-cache.py          唤端 → 等同步 → 重解密 → 重启服务
   agent_read.py             只读桥接（白名单 + 时间窗）
   push-dingtalk.py          推送钉钉群机器人
+  dida-task.py              建滴答清单任务（官方 MCP）
 examples/
   allowed_groups.example.json
 ```

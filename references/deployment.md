@@ -71,7 +71,28 @@ python agent_read.py messages --cid 12345678901 --since 1792339200000 --until 17
 - 重新解密会覆盖明文副本，属于敏感操作，单独授权后再做
 - 简报里始终写明**缓存快照时间**，不要让读者误以为是实时数据
 
-## 7. 常见问题
+## 7. 自动刷新（可选）
+
+`scripts/prepare-cache.py` 把整条刷新链路串成一步，适合定时任务：
+
+1. 钉钉客户端没在跑时启动它（需要 `DINGTALK_EXE`）
+2. 监视加密库的 `-wal`，连续若干秒不再变化才算同步稳定（需要 `DINGTALK_WAL`）
+3. 停掉本地只读服务（只停监听该端口的 python 进程）
+4. 调 `decrypt.py` 重新生成快照
+5. 以脱离会话的方式重启服务，再等健康检查通过
+
+```powershell
+setx DINGTALK_EXPORTER_DIR "D:\dingtalk-brief\dingtalk-chat-exporter"
+setx DINGTALK_EXE "C:\Program Files (x86)\DingDing\main\current\DingTalk.exe"
+setx DINGTALK_WAL "C:\Users\<you>\AppData\Roaming\DingTalk\<account>_v3\DBFiles\dingtalk.db-wal"
+python scripts/prepare-cache.py
+```
+
+输出 `{"ok": true, "snapshot": "...", "service": "ready", ...}`；`ok` 不为 true 就别继续读，直接把 JSON 报给用户。
+
+**注意**：这一步每次都会生成整个账号的明文副本，只在明确授权的环境里用。没有配置 `DINGTALK_WAL` 时脚本退化为固定等待 5 秒，不保证同步完成。
+
+## 8. 常见问题
 
 | 现象 | 原因 | 处理 |
 | --- | --- | --- |

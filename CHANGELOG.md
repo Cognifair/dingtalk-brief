@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.0 — 2026-10-20
+
+- 新增 `scripts/prepare-cache.py`：唤端 → 等同步稳定 → 停服务 → 重解密 → 重启，一条命令拿到最新快照
+- 新增 `scripts/dida-task.py`：通过滴答官方 MCP 建任务，支持未完成+已完成去重、`--dry-run`、`projects`、`today`
+- 工作流第 5 步改为「交付、推送、建任务」同一轮完成，两者互不阻塞
+- 摘要结构新增「先对表」：截止时间早于当前时刻的一律进【已过期/需核实】
+- README 增加自动刷新、滴答任务、定时任务编排说明
+
 ## v1.0.1 — 2026-10-19
 
 - 明确来源：本地读取链路基于 [dingtalk-chat-exporter](https://github.com/idealistichacker/dingtalk-chat-exporter)（MIT）开发
