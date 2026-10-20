@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1 — 2026-10-20
+
+- 修复 Windows 中文控制台下脚本打印含 emoji 的任务名时报 `gbk codec` 错误：输出统一按 UTF-8 写出
+
 ## v1.1.0 — 2026-10-20
 
 - 新增 `scripts/prepare-cache.py`：唤端 → 等同步稳定 → 停服务 → 重解密 → 重启，一条命令拿到最新快照

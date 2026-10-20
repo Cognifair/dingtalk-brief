@@ -153,6 +153,12 @@ def start_service() -> bool:
 
 
 def main() -> int:
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
     if not EXPORTER or not os.path.isfile(VENV_PY):
         print(json.dumps({"ok": False,
                           "error": "set DINGTALK_EXPORTER_DIR to the exporter checkout",
