@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0 — 2026-11-12
+
+- `push-dingtalk.py`：新增 `--at-mobile` / `--at-userid` / `--at-all`，可在群里 @ 指定成员（正文自动补 `@号码`，只传字段会出现“看不见的 @”）
+- `push-dingtalk.py`：读取正文兼容 BOM；**空消息保护**——正文少于 20 字符直接拒绝发送，避免模板提取失败时往群里发空卡片
+- `push-dingtalk.py`：失败时返回结构化 error，不再只抛异常
+- `dida-task.py`：任务文件读取改为 `utf-8-sig`，PowerShell 写出的 BOM 文件不再报 `Unexpected UTF-8 BOM`
+- 新增 `scripts/dida-fanout.py`：同一批任务推送到多个滴答账号，账号表只存环境变量名；每账号独立去重、失败隔离、串行限速
+- 新增 `examples/dida-accounts.example.json`
+- 工作流补充三条规则：群 0 条时先复核再下结论；小组作业必须写清课程/内容/交付方式/截止；关键信息在未解析图片里时，明确要信息并建「补图信息」待办（截止当天）
+- 推送章节新增硬规则：临时文案、改过的广告、用户刚给的内容，**先把完整正文给用户确认，得到明确同意再发**
+- 清理仓库中的 `__pycache__` 构建产物
+
 ## v1.1.1 — 2026-10-20
 
 - 修复 Windows 中文控制台下脚本打印含 emoji 的任务名时报 `gbk codec` 错误：输出统一按 UTF-8 写出

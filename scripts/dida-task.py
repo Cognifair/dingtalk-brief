@@ -166,7 +166,7 @@ def cmd_today(cli: Mcp) -> int:
 
 
 def cmd_add(cli: Mcp, path: str, project_id: str, dry_run: bool) -> int:
-    with open(path, "r", encoding="utf-8") as stream:
+    with open(path, "r", encoding="utf-8-sig") as stream:
         tasks = json.load(stream)
     if isinstance(tasks, dict):
         tasks = [tasks]
@@ -197,6 +197,15 @@ def cmd_add(cli: Mcp, path: str, project_id: str, dry_run: bool) -> int:
         existing |= {normalize(item.get("title", "")) for item in done_items if isinstance(item, dict)}
     except Exception as exc:  # noqa: BLE001 - dedupe is best effort
         print(json.dumps({"dedupe_completed": "skipped", "reason": str(exc)[:200]}, ensure_ascii=False))
+
+    # Undated tasks never fall inside a date window, so pull the whole undone list too.
+    try:
+        all_undone = cli.tool("filter_tasks", {"filter": {"status": [0]}})
+        all_items = all_undone.get("result") if isinstance(all_undone, dict) else all_undone
+        existing |= {normalize(item.get("title", "")) for item in (all_items or [])
+                     if isinstance(item, dict)}
+    except Exception as exc:  # noqa: BLE001 - dedupe is best effort
+        print(json.dumps({"dedupe_undated": "skipped", "reason": str(exc)[:200]}, ensure_ascii=False))
 
     created, skipped = [], []
     for task in tasks:

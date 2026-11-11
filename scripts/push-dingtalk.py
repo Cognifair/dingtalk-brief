@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 """Send a Markdown message to a DingTalk custom-robot webhook.
 
-The webhook is read from the DINGTALK_ROBOT environment variable so the token
-never has to live in a command line or in this file. On Windows, if the
-variable is missing from the current process, the user-level registry value is
-used as a fallback.
+Reads the webhook from the DINGTALK_ROBOT environment variable so the token
+never has to live in a command line or in this file.
 
-If the robot uses the "custom keyword" security setting, export that keyword as
-DINGTALK_KEYWORD; it is appended automatically when the text lacks it.
+The robot was configured with a keyword security setting, so every message
+must contain the keyword (default: Cognifair); it is appended if missing.
 
 Usage:
-    python push-dingtalk.py --title "Standup brief" --text-file brief.md
+    python push-dingtalk.py --title "Cognifair · 钉钉简报 10-19" --text-file brief.md
     python push-dingtalk.py --title "..." --text "inline markdown"
-    python push-dingtalk.py --title "..." --text-file brief.md --dry-run
 """
 
 import argparse
@@ -21,6 +18,8 @@ import os
 import sys
 import urllib.error
 import urllib.request
+
+KEYWORD = "Cognifair"
 
 
 def _user_env(name: str) -> str:
@@ -37,12 +36,8 @@ def _user_env(name: str) -> str:
         return ""
 
 
-def env(name: str) -> str:
-    return (os.environ.get(name) or _user_env(name)).strip()
-
-
 def load_webhook() -> str:
-    url = env("DINGTALK_ROBOT")
+    url = (os.environ.get("DINGTALK_ROBOT") or _user_env("DINGTALK_ROBOT")).strip()
     if not url:
         print(json.dumps({"ok": False, "error": "DINGTALK_ROBOT is not set"}, ensure_ascii=False))
         sys.exit(2)
@@ -53,10 +48,9 @@ def load_webhook() -> str:
 
 
 def ensure_keyword(text: str) -> str:
-    keyword = env("DINGTALK_KEYWORD")
-    if not keyword or keyword in text:
+    if KEYWORD in text:
         return text
-    return text.rstrip() + "\n\n—— " + keyword
+    return text.rstrip() + "\n\n—— " + KEYWORD
 
 
 def main() -> int:
@@ -72,29 +66,56 @@ def main() -> int:
     group.add_argument("--text-file")
     group.add_argument("--text")
     parser.add_argument("--dry-run", action="store_true", help="print the payload without sending")
+    parser.add_argument("--at-mobile", action="append", default=[],
+                        help="mobile number to @ (repeatable); also inserted into the text")
+    parser.add_argument("--at-userid", action="append", default=[],
+                        help="DingTalk userId to @ (repeatable); needs the text mention too")
+    parser.add_argument("--at-all", action="store_true", help="@ everyone in the group")
     args = parser.parse_args()
 
     if args.text_file:
-        with open(args.text_file, "r", encoding="utf-8") as stream:
+        with open(args.text_file, "r", encoding="utf-8-sig") as stream:
             text = stream.read()
     else:
         text = args.text
+    text = text.lstrip("\ufeff")
 
-    keyword = env("DINGTALK_KEYWORD")
-    title = args.title
-    if keyword and keyword not in title:
-        title = title + " · " + keyword
+    # Guard: never push an empty or near-empty card (happened once when a template
+    # extraction silently produced an empty file and the group got a blank message).
+    if len(text.strip()) < 20:
+        print(json.dumps({
+            "ok": False,
+            "error": "refusing to send empty/near-empty message",
+            "chars": len(text.strip()),
+        }, ensure_ascii=False))
+        return 2
+
+    title = args.title if KEYWORD in args.title else args.title + " · " + KEYWORD
     text = ensure_keyword(text)
 
-    payload = {"msgtype": "markdown", "markdown": {"title": title, "text": text}}
+    payload = {
+        "msgtype": "markdown",
+        "markdown": {"title": title, "text": text},
+    }
+    if args.at_mobile or args.at_userid or args.at_all:
+        mentions = " ".join("@" + m for m in args.at_mobile)
+        if mentions:
+            # DingTalk only renders the @ when the text contains it as well.
+            payload["markdown"]["text"] = text + "\n\n" + mentions
+        payload["at"] = {
+            "atMobiles": args.at_mobile,
+            "atUserIds": args.at_userid,
+            "isAtAll": args.at_all,
+        }
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
     if args.dry_run:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 0
 
+    url = load_webhook()
     request = urllib.request.Request(
-        load_webhook(),
+        url,
         data=body,
         headers={"Content-Type": "application/json; charset=utf-8"},
         method="POST",

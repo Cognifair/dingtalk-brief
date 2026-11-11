@@ -1,0 +1,4 @@
+﻿[
+  { "name": "主账号", "tokenEnv": "DIDA_TOKEN", "default": true },
+  { "name": "同学A", "tokenEnv": "DIDA_TOKEN_2" }
+]
